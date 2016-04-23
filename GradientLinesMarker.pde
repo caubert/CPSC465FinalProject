@@ -24,13 +24,6 @@ public class GradientLinesMarker extends SimpleLinesMarker {
    *            The locations to connect via lines.
    */
   public GradientLinesMarker(List<Location> locations) {
-    //super(elevationLocations);
-    /*
-    List<Location> locations = new ArrayList<Location>();
-    for (ElevationLocation el : elevationLocations) {
-      locations.add(el);
-    }
-    */
     super(locations);
   }
 
@@ -69,7 +62,7 @@ public class GradientLinesMarker extends SimpleLinesMarker {
     if (isSelected()) {
       pg.stroke(highlightColor);
     } else {
-      pg.stroke(color());
+    //  pg.stroke(color);
     }
     pg.strokeWeight(strokeWeight);
     pg.smooth();

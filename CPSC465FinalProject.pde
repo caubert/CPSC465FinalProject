@@ -11,7 +11,7 @@ import de.fhpotsdam.unfolding.data.*;
 import de.fhpotsdam.unfolding.marker.*;
 import java.util.List;
 
-Location bostonLocation = new Location(42.357778f, -71.061667f);
+Location gonzagaLocation = new Location(47.665442f, -117.405627f);
 
 UnfoldingMap map;
 
@@ -23,9 +23,9 @@ void setup() {
     
     map = new UnfoldingMap(this, new Google.GoogleTerrainProvider()); 
     map.zoomToLevel(11);
-    map.panTo(bostonLocation);
-    map.setZoomRange(9, 17); // prevent zooming too far out
-    map.setPanningRestriction(bostonLocation, 50);
+    map.panTo(gonzagaLocation);
+    //map.setZoomRange(9, 17); // prevent zooming too far out
+    //map.setPanningRestriction(bostonLocation, 50);
     MapUtils.createDefaultEventDispatcher(this, map);
 
     gpx = new GPX(this);
@@ -56,7 +56,7 @@ void setup() {
         //SimpleLinesMarker m = new SimpleLinesMarker(lineFeature.getLocations());
         GradientLinesMarker m = new GradientLinesMarker(locations);
         m.setColor(color(255,0,0));
-        m.setStrokeWeight(5);
+        m.setStrokeWeight(3);
         transitMarkers.add(m);
     //}
 
