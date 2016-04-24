@@ -16,6 +16,9 @@ public class GradientLinesMarker extends SimpleLinesMarker {
     protected List<Float> elevations;
     protected float maxElevation = MIN_FLOAT;
     protected float minElevation = MAX_FLOAT;
+    
+    protected List<SpeedTime> speedTimes;
+    protected float maxSpeed = MIN_FLOAT;
 
   public GradientLinesMarker() {
     super();
@@ -29,12 +32,21 @@ public class GradientLinesMarker extends SimpleLinesMarker {
    */
     public GradientLinesMarker(List<ElevationLocation> locations) {
         elevations = new ArrayList<Float>();
+        speedTimes = new ArrayList<SpeedTime>();
+        ElevationLocation priorLocation = locations.get(0);
+        
         for (ElevationLocation location : locations) {
             this.addLocation(location.getLat(), location.getLon());
+            
             float elevation = location.getElevation();
             elevations.add(elevation);
             if (elevation < minElevation) minElevation = elevation;
             if (elevation > maxElevation) maxElevation = elevation;
+            
+            SpeedTime st = new SpeedTime(priorLocation, location);
+            speedTimes.add(st);
+            if (st.speed > maxSpeed) maxSpeed = st.speed;
+            priorLocation = location;
         }
     }
 
@@ -75,18 +87,38 @@ public class GradientLinesMarker extends SimpleLinesMarker {
 
         LABColor minColor = new LABColor(color(0,0,200));
         LABColor maxColor = new LABColor(color(220,0,0));
+        
+        boolean indexMarked = false;
+        float indexX = 0;
+        float indexY = 0;
 
         pg.beginShape(PConstants.LINES);
         MapPosition last = mapPositions.get(0);
         for (int i = 1; i < mapPositions.size (); ++i) {
-            pg.stroke(minColor.lerp(maxColor, (elevations.get(i)-minElevation)/(maxElevation-minElevation)).rgb);
-            //pg.stroke(255,255,0);
+            if (elevationSelected) {
+                pg.stroke(minColor.lerp(maxColor, (elevations.get(i)-minElevation)/(maxElevation-minElevation)).rgb);
+            } else if (speedSelected) {
+                pg.stroke(minColor.lerp(maxColor, speedTimes.get(i).speed/maxSpeed).rgb);
+            } else {
+                pg.stroke(color(255,0,0));
+            }
             MapPosition mp = mapPositions.get(i);
             pg.vertex(last.x, last.y);
             pg.vertex(mp.x, mp.y);
             last = mp;
+            
+            if (!indexMarked && selectedDateTime.before(speedTimes.get(i).time)) {
+                indexX = mp.x;
+                indexY = mp.y;
+                indexMarked = true;
+            }
         }
         pg.endShape();
+        if (indexMarked && drawIndex) {
+            pg.stroke(maxColor.rgb);
+            pg.strokeWeight(5);
+            pg.ellipse(indexX, indexY, 5, 5);
+        }
         pg.popStyle();
     }
 }

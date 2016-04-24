@@ -8,7 +8,7 @@ public static class DistanceAccum {
 public class SpeedTime {
     
     //meters / s
-    protected double speed;
+    protected float speed;
     protected Date time;
     
     public SpeedTime(ElevationLocation loc0, ElevationLocation loc1) {

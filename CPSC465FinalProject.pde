@@ -39,11 +39,12 @@ int HORTIZONTAL_PADDING = 48;
 int TOP_BORDER_ELEVATION, BOTTOM_BORDER_ELEVATION, TOP_BORDER_SPEED, BOTTOM_BORDER_SPEED, LEFT_BORDER, RIGHT_BORDER;
 
 //Data variables
-Date minDate, maxDate, midDate;
+Date minDate, maxDate, midDate, selectedDateTime;
 double minElevation, maxElevation, midElevation, elevationDelta, dateDelta, minSpeed, maxSpeed, midSpeed, speedDelta;
 
 //Interactive
 float selectedPercentile;
+boolean elevationSelected, speedSelected, drawIndex;
 
 void setup() {
     size(800, 800, OPENGL);
@@ -52,6 +53,8 @@ void setup() {
     updateLayoutVariables();
     
     selectedPercentile = 0;
+    elevationSelected = false;
+    speedSelected = false;
     
     map = new UnfoldingMap(this, "map", 0, 0, width, height, true, false, new Google.GoogleTerrainProvider());
     map.zoomToLevel(12);
@@ -96,6 +99,7 @@ void setup() {
     routeMarkers.add(m);
 
     map.addMarkers(routeMarkers);
+    
     frame.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
         if(e.getSource()==frame) {
@@ -107,6 +111,7 @@ void setup() {
 }
 
 void draw() {
+    locateMouse();
   background(255);
   map.draw();
   drawGraphs();
@@ -115,9 +120,19 @@ void draw() {
     //line(mouseX, height / 2, mouseX, height);
     line(mouseX, TOP_BORDER_ELEVATION, mouseX, BOTTOM_BORDER_ELEVATION);
     line(mouseX, TOP_BORDER_SPEED, mouseX, BOTTOM_BORDER_SPEED);
-    selectedPercentile = (mouseX - LEFT_BORDER) / (float)(RIGHT_BORDER - LEFT_BORDER);
     drawSelected();
   }
+}
+
+void locateMouse() {
+    elevationSelected = mouseY > TOP_BORDER_ELEVATION - VERTICAL_PADDING && mouseY < BOTTOM_BORDER_ELEVATION + VERTICAL_PADDING;
+    speedSelected = mouseY > TOP_BORDER_SPEED - VERTICAL_PADDING && mouseY < BOTTOM_BORDER_SPEED + VERTICAL_PADDING;
+    selectedPercentile = (mouseX - LEFT_BORDER) / (float)(RIGHT_BORDER - LEFT_BORDER);
+    drawIndex = mouseY > TOP_BORDER_ELEVATION - VERTICAL_PADDING;
+    
+    long minDateTime = minDate.getTime();
+    long maxDateTime = maxDate.getTime();
+    selectedDateTime = new Date((long)lerp(minDateTime, maxDateTime, selectedPercentile));
 }
 
 void drawGraphs() {
@@ -125,7 +140,7 @@ void drawGraphs() {
     fill(245,210);
     rect(0,(height/5)*3,width,(height/5)*3);
   drawElevationGraph();
-  drawSpeedGrpah();
+  drawSpeedGraph();
   drawLabels();
 }
 
@@ -134,7 +149,7 @@ void drawElevationGraph() {
   drawElevationGraphLine();
 }
 
-void drawSpeedGrpah() {
+void drawSpeedGraph() {
   drawSpeedGraphBorders();
   drawSpeedGraphLine();
 }
@@ -256,14 +271,10 @@ void drawTimeXAxisLabels() {
 }
 
 void drawSelected() {
-  long minDateTime = minDate.getTime();
-  long maxDateTime = maxDate.getTime();
-  long selectedDateTime = (long)lerp(minDateTime, maxDateTime, selectedPercentile);
-  
   textSize(12);
   fill(0);
   textAlign(LEFT, BOTTOM);
-  text(new Date(selectedDateTime).toString()/* + "Elevation: " + "meters, " + "Speed: " + " m/s, " + " mph"*/, 0, height);
+  text(selectedDateTime.toString()/* + "Elevation: " + "meters, " + "Speed: " + " m/s, " + " mph"*/, 0, height);
 }
 
 void setupDataVariables() {
@@ -309,17 +320,12 @@ void updateLayoutVariables() {
     TOP_BORDER_ELEVATION = (height/5)*3 + VERTICAL_PADDING; 
     BOTTOM_BORDER_ELEVATION = (height/5)*4 - VERTICAL_PADDING;
     TOP_BORDER_SPEED = (height/5)*4 + VERTICAL_PADDING;
-    
-  //TOP_BORDER_ELEVATION = (height / 2) + VERTICAL_PADDING;
-  //BOTTOM_BORDER_ELEVATION = ((3 * height) / 4) - VERTICAL_PADDING;
-  //TOP_BORDER_SPEED = ((3 * height) / 4) + VERTICAL_PADDING;
-  BOTTOM_BORDER_SPEED = height - VERTICAL_PADDING;
-  LEFT_BORDER = HORTIZONTAL_PADDING;
-  RIGHT_BORDER = width - HORTIZONTAL_PADDING;
+    BOTTOM_BORDER_SPEED = height - VERTICAL_PADDING;
+    LEFT_BORDER = HORTIZONTAL_PADDING;
+    RIGHT_BORDER = width - HORTIZONTAL_PADDING;
 }
 
 void updateMapSize() {
-  //map.mapDisplay.resize(width, height / 2);
     map.mapDisplay.resize(width, height);
 }
 
