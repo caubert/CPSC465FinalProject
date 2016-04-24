@@ -60,8 +60,8 @@ void setup() {
 
     gpx = new GPX(this);
   
-    //gpx.parse("activity_1130367568.gpx");
-    gpx.parse("activity_1120979638.gpx");
+    //gpx.parse("data/activity_1130367568.gpx");
+    gpx.parse("data/activity_1120979638.gpx");
     
     locations = new ArrayList<Location>();
     elevations = new ArrayList<ElevationLocation>();

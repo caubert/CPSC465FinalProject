@@ -73,8 +73,8 @@ public class GradientLinesMarker extends SimpleLinesMarker {
         pg.strokeWeight(strokeWeight);
         pg.smooth();
 
-        LABColor minColor = new LABColor(color(0,0,255));
-        LABColor maxColor = new LABColor(color(255,0,0));
+        LABColor minColor = new LABColor(color(0,0,200));
+        LABColor maxColor = new LABColor(color(220,0,0));
 
         pg.beginShape(PConstants.LINES);
         MapPosition last = mapPositions.get(0);
