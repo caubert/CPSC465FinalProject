@@ -17,11 +17,15 @@ UnfoldingMap map;
 
 GPX gpx;
 
+List<Location> locations;
+
 void setup() {
-    size(800, 600, OPENGL);
+    size(800, 1200, OPENGL);
     smooth();
     
-    map = new UnfoldingMap(this, new Google.GoogleTerrainProvider()); 
+    //map = new UnfoldingMap(this, new Google.GoogleTerrainProvider());
+    map = new UnfoldingMap(this, "map", 0, 0, width, height / 2, true, false, new Google.GoogleTerrainProvider());
+    //map = new UnfoldingMap(this, "map1", 0, 0, width, height / 2, true, false, new Microsoft.AerialProvider());
     map.zoomToLevel(11);
     map.panTo(gonzagaLocation);
     //map.setZoomRange(9, 17); // prevent zooming too far out
@@ -32,7 +36,7 @@ void setup() {
   
     gpx.parse("activity_1130367568.gpx");
     
-    List<Location> locations = new ArrayList<Location>();
+    locations = new ArrayList<Location>();
     
     for (int i = 0; i < gpx.getTrackCount(); i++) {
         GPXTrack trk = gpx.getTrack(i);
@@ -64,6 +68,53 @@ void setup() {
 }
 
 void draw() {
-    map.draw();
+  background(255);
+  map.draw();
+  drawElevationGraph();
 }
+
+void drawElevationGraph() {
+  final int TOP = height / 2;
+  final int BOTTOM = (3 * height) / 4;
+  final int LEFT = 0;
+  final int RIGHT = width;
+  
+  List<ElevationLocation> elevations = new ArrayList<ElevationLocation>();
+  for(Location loc : locations) {
+    elevations.add((ElevationLocation)loc);
+  }
+  
+  int dataCount = elevations.size();
+  
+  double minElevation = Double.MAX_VALUE;
+  double maxElevation = Double.MIN_VALUE;
+  for(ElevationLocation elevation : elevations) {
+    if(elevation.ele > maxElevation)
+      maxElevation = elevation.ele;
+    if(elevation.ele < minElevation)
+      minElevation = elevation.ele;
+  }
+  double elevationDelta = maxElevation - minElevation;
+  int i = 0;
+  stroke(255, 0, 0);
+  beginShape(LINES);
+  for(ElevationLocation elevation : elevations) {
+    int xPos = (int)lerp(LEFT, RIGHT, i / (float)dataCount);
+    int yPos = (int)lerp(BOTTOM, TOP, (float)((elevation.ele - minElevation) / elevationDelta));
+    vertex(xPos, yPos);
+    i++;
+    print("(" + xPos + ", " + yPos + ")");
+  }
+  endShape();
+}
+
+
+
+
+
+
+
+
+
+
 
