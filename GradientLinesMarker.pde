@@ -12,6 +12,10 @@ import de.fhpotsdam.unfolding.utils.MapPosition;
  * This can be a polyline consisting of multiple locations, or a single line consisting of two locations.
  */
 public class GradientLinesMarker extends SimpleLinesMarker {
+    
+    protected List<Float> elevations;
+    protected float maxElevation = MIN_FLOAT;
+    protected float minElevation = MAX_FLOAT;
 
   public GradientLinesMarker() {
     super();
@@ -23,9 +27,16 @@ public class GradientLinesMarker extends SimpleLinesMarker {
    * @param locations
    *            The locations to connect via lines.
    */
-  public GradientLinesMarker(List<Location> locations) {
-    super(locations);
-  }
+    public GradientLinesMarker(List<ElevationLocation> locations) {
+        elevations = new ArrayList<Float>();
+        for (ElevationLocation location : locations) {
+            this.addLocation(location.getLat(), location.getLon());
+            float elevation = location.getElevation();
+            elevations.add(elevation);
+            if (elevation < minElevation) minElevation = elevation;
+            if (elevation > maxElevation) maxElevation = elevation;
+        }
+    }
 
   /**
    * Creates a polyline marker with additional properties.
@@ -48,36 +59,35 @@ public class GradientLinesMarker extends SimpleLinesMarker {
    * @param endLocation
    *            The location of the end of this line.
    */
-  public GradientLinesMarker(Location startLocation, Location endLocation) {
-    addLocations(startLocation, endLocation);
-  }
+    public GradientLinesMarker(Location startLocation, Location endLocation) {
+        addLocations(startLocation, endLocation);
+    }
 
-  @Override
+    @Override
     public void draw(PGraphics pg, List<MapPosition> mapPositions) {
-    if (mapPositions.isEmpty() || isHidden())
-      return;
+        if (mapPositions.isEmpty() || isHidden())
+            return;
 
-    pg.pushStyle();
-    pg.noFill();
-    if (isSelected()) {
-      pg.stroke(highlightColor);
-    } else {
-    //  pg.stroke(color);
+        pg.pushStyle();
+        pg.noFill();
+        pg.strokeWeight(strokeWeight);
+        pg.smooth();
+
+        LABColor minColor = new LABColor(color(0,0,255));
+        LABColor maxColor = new LABColor(color(255,0,0));
+
+        pg.beginShape(PConstants.LINES);
+        MapPosition last = mapPositions.get(0);
+        for (int i = 1; i < mapPositions.size (); ++i) {
+            pg.stroke(minColor.lerp(maxColor, (elevations.get(i)-minElevation)/(maxElevation-minElevation)).rgb);
+            //pg.stroke(255,255,0);
+            MapPosition mp = mapPositions.get(i);
+            pg.vertex(last.x, last.y);
+            pg.vertex(mp.x, mp.y);
+            last = mp;
+        }
+        pg.endShape();
+        pg.popStyle();
     }
-    pg.strokeWeight(strokeWeight);
-    pg.smooth();
-
-    pg.beginShape(PConstants.LINES);
-    MapPosition last = mapPositions.get(0);
-    for (int i = 1; i < mapPositions.size (); ++i) {
-      MapPosition mp = mapPositions.get(i);
-      pg.vertex(last.x, last.y);
-      pg.vertex(mp.x, mp.y);
-
-      last = mp;
-    }
-    pg.endShape();
-    pg.popStyle();
-  }
 }
 

@@ -12,5 +12,7 @@ public class ElevationLocation extends Location {
         this.time = time;
     }
     
-    
+    public float getElevation() {
+        return ele;
+    }
 }

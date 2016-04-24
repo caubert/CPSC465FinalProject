@@ -41,7 +41,7 @@ public class SpeedTime {
       float distance = sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
       DistanceAccum.totalDistance += distance;
       this.speed = distance / timeDelta;
-      println(timeDelta);
+      //println(timeDelta);
       this.time = new Date(timePrevious + timeDelta / 2);
     }
 }

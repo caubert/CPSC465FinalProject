@@ -15,6 +15,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 Location gonzagaLocation = new Location(47.665442f, -117.405627f);
+Location centerpoint = new Location(47.675003, -117.331115);
 
 UnfoldingMap map;
 
@@ -45,25 +46,22 @@ double minElevation, maxElevation, midElevation, elevationDelta, dateDelta, minS
 float selectedPercentile;
 
 void setup() {
-    size(800, 1200, OPENGL);
+    size(800, 800, OPENGL);
     frame.setResizable(true);
     smooth();
     updateLayoutVariables();
     
     selectedPercentile = 0;
     
-    //map = new UnfoldingMap(this, new Google.GoogleTerrainProvider());
-    map = new UnfoldingMap(this, "map", 0, 0, width, height / 2, true, false, new Google.GoogleTerrainProvider());
-    //map = new UnfoldingMap(this, "map1", 0, 0, width, height / 2, true, false, new Microsoft.AerialProvider());
-    map.zoomToLevel(11);
-    map.panTo(gonzagaLocation);
-    //map.setZoomRange(9, 17); // prevent zooming too far out
-    //map.setPanningRestriction(bostonLocation, 50);
+    map = new UnfoldingMap(this, "map", 0, 0, width, height, true, false, new Google.GoogleTerrainProvider());
+    map.zoomToLevel(12);
+    map.panTo(centerpoint);
     MapUtils.createDefaultEventDispatcher(this, map);
 
     gpx = new GPX(this);
   
-    gpx.parse("activity_1130367568.gpx");
+    //gpx.parse("activity_1130367568.gpx");
+    gpx.parse("activity_1120979638.gpx");
     
     locations = new ArrayList<Location>();
     elevations = new ArrayList<ElevationLocation>();
@@ -84,27 +82,20 @@ void setup() {
     //Create a list of speeds between all the measured points
     speedTimes = new ArrayList<SpeedTime>();
     for(int i = 1; i < elevations.size(); i++) {
-      speedTimes.add(new SpeedTime(elevations.get(i - 1), elevations.get(i)));
+        speedTimes.add(new SpeedTime(elevations.get(i - 1), elevations.get(i)));
     }
     setupDataVariables();
     println("Traveled a total of " + DistanceAccum.totalDistance + " meters");
     println("                 or " + DistanceAccum.totalDistance / MILE_TO_METER + " miles");
 
-    //List<Feature> transitLines = GeoJSONReader.loadData(this, "data/MBTARapidTransitLines.json");
+    List<Marker> routeMarkers = new ArrayList<Marker>();
+    //GradientLinesMarker m = new GradientLinesMarker(locations);
+    GradientLinesMarker m = new GradientLinesMarker(elevations);
+    m.setColor(color(255,0,0));
+    m.setStrokeWeight(3);
+    routeMarkers.add(m);
 
-    // Create marker from features, and use LINE property to color the markers.
-    List<Marker> transitMarkers = new ArrayList<Marker>();
-    //for (Feature feature : transitLines) {
-     //   ShapeFeature lineFeature = (ShapeFeature) feature;
-
-        //SimpleLinesMarker m = new SimpleLinesMarker(lineFeature.getLocations());
-        GradientLinesMarker m = new GradientLinesMarker(locations);
-        m.setColor(color(255,0,0));
-        m.setStrokeWeight(3);
-        transitMarkers.add(m);
-    //}
-
-    map.addMarkers(transitMarkers);
+    map.addMarkers(routeMarkers);
     frame.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
         if(e.getSource()==frame) {
@@ -119,16 +110,20 @@ void draw() {
   background(255);
   map.draw();
   drawGraphs();
-  if(mouseY > height / 2 && mouseX > LEFT_BORDER && mouseX < RIGHT_BORDER)
-  {
+  if(mouseY > height / 2 && mouseX > LEFT_BORDER && mouseX < RIGHT_BORDER) {
     stroke(0, 0, 0, 128);
-    line(mouseX, height / 2, mouseX, height);
+    //line(mouseX, height / 2, mouseX, height);
+    line(mouseX, TOP_BORDER_ELEVATION, mouseX, BOTTOM_BORDER_ELEVATION);
+    line(mouseX, TOP_BORDER_SPEED, mouseX, BOTTOM_BORDER_SPEED);
     selectedPercentile = (mouseX - LEFT_BORDER) / (float)(RIGHT_BORDER - LEFT_BORDER);
     drawSelected();
   }
 }
 
 void drawGraphs() {
+    noStroke();
+    fill(245,210);
+    rect(0,(height/5)*3,width,(height/5)*3);
   drawElevationGraph();
   drawSpeedGrpah();
   drawLabels();
@@ -153,7 +148,7 @@ void drawLabels() {
 //Draws borders for elevation graph
 void drawElevationGraphBorders() {
   noFill();
-  stroke(0, 0, 0);
+  stroke(100);
   strokeWeight(2);
   beginShape();
   vertex(LEFT_BORDER, TOP_BORDER_ELEVATION);
@@ -166,7 +161,7 @@ void drawElevationGraphBorders() {
 //Draws elevation line
 void drawElevationGraphLine() {
   stroke(255, 0, 0);
-  strokeWeight(2);
+  strokeWeight(1.5);
   beginShape();
   for(ElevationLocation elevation : elevations) {
     int xPos = (int)lerp(LEFT_BORDER, RIGHT_BORDER, (float)((elevation.time.getTime() - minDate.getTime()) / dateDelta));
@@ -179,7 +174,7 @@ void drawElevationGraphLine() {
 //Draws borders for speed graph
 void drawSpeedGraphBorders() {
   noFill();
-  stroke(0, 0, 0);
+  stroke(100);
   strokeWeight(2);
   beginShape();
   vertex(LEFT_BORDER, TOP_BORDER_SPEED);
@@ -192,7 +187,7 @@ void drawSpeedGraphBorders() {
 //Draws speed line
 void drawSpeedGraphLine() {
   stroke(255, 0, 0);
-  strokeWeight(2);
+  strokeWeight(1.5);
   beginShape();
   for(SpeedTime speedTime : speedTimes) {
     int xPos = (int)lerp(LEFT_BORDER, RIGHT_BORDER, (float)((speedTime.time.getTime() - minDate.getTime()) / dateDelta));
@@ -311,16 +306,21 @@ void setupDataVariables() {
 }
 
 void updateLayoutVariables() {
-  TOP_BORDER_ELEVATION = (height / 2) + VERTICAL_PADDING;
-  BOTTOM_BORDER_ELEVATION = ((3 * height) / 4) - VERTICAL_PADDING;
-  TOP_BORDER_SPEED = ((3 * height) / 4) + VERTICAL_PADDING;
+    TOP_BORDER_ELEVATION = (height/5)*3 + VERTICAL_PADDING; 
+    BOTTOM_BORDER_ELEVATION = (height/5)*4 - VERTICAL_PADDING;
+    TOP_BORDER_SPEED = (height/5)*4 + VERTICAL_PADDING;
+    
+  //TOP_BORDER_ELEVATION = (height / 2) + VERTICAL_PADDING;
+  //BOTTOM_BORDER_ELEVATION = ((3 * height) / 4) - VERTICAL_PADDING;
+  //TOP_BORDER_SPEED = ((3 * height) / 4) + VERTICAL_PADDING;
   BOTTOM_BORDER_SPEED = height - VERTICAL_PADDING;
   LEFT_BORDER = HORTIZONTAL_PADDING;
   RIGHT_BORDER = width - HORTIZONTAL_PADDING;
 }
 
 void updateMapSize() {
-  map.mapDisplay.resize(width, height / 2);
+  //map.mapDisplay.resize(width, height / 2);
+    map.mapDisplay.resize(width, height);
 }
 
 
