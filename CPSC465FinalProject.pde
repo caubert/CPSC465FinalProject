@@ -24,6 +24,7 @@ GPX gpx;
 List<Location> locations;
 List<ElevationLocation> elevations;
 List<SpeedTime> speedTimes;
+List<UnfoldingMap> maps;
 
 //Unit conversion constants
 double METER_TO_CENTIMETER = 100;
@@ -45,6 +46,7 @@ double minElevation, maxElevation, midElevation, elevationDelta, dateDelta, minS
 //Interactive
 double selectedPercentile;
 boolean elevationSelected, speedSelected, drawIndex;
+int selectedMapIndex;
 
 void setup() {
   size(800, 800, OPENGL);
@@ -55,11 +57,18 @@ void setup() {
   selectedPercentile = 0;
   elevationSelected = false;
   speedSelected = false;
+  selectedMapIndex = 0;
 
-  map = new UnfoldingMap(this, "map", 0, 0, width, height, true, false, new Google.GoogleTerrainProvider());
-  map.zoomToLevel(12);
-  map.panTo(centerpoint);
-  MapUtils.createDefaultEventDispatcher(this, map);
+
+  maps = new ArrayList<UnfoldingMap>();
+  maps.add(new UnfoldingMap(this, "map0", 0, 0, width, height, true, false, new Google.GoogleTerrainProvider()));
+  maps.add(new UnfoldingMap(this, "map1", 0, 0, width, height, true, false, new Microsoft.AerialProvider()));
+  map = maps.get(selectedMapIndex);
+  for(UnfoldingMap m : maps) {
+    m.zoomToLevel(12);
+    m.panTo(centerpoint);
+    MapUtils.createDefaultEventDispatcher(this, m);
+  }
 
   gpx = new GPX(this);
 
@@ -92,13 +101,15 @@ void setup() {
   println("                 or " + DistanceAccum.totalDistance / MILE_TO_METER + " miles");
 
   List<Marker> routeMarkers = new ArrayList<Marker>();
-  //GradientLinesMarker m = new GradientLinesMarker(locations);
-  GradientLinesMarker m = new GradientLinesMarker(elevations);
-  m.setColor(color(255, 0, 0));
-  m.setStrokeWeight(3);
-  routeMarkers.add(m);
+  //GradientLinesMarker glm = new GradientLinesMarker(locations);
+  GradientLinesMarker glm = new GradientLinesMarker(elevations);
+  glm.setColor(color(255, 0, 0));
+  glm.setStrokeWeight(3);
+  routeMarkers.add(glm);
 
-  map.addMarkers(routeMarkers);
+  for(UnfoldingMap m : maps) {
+    m.addMarkers(routeMarkers);
+  }
 
   frame.addComponentListener(new ComponentAdapter() {
     public void componentResized(ComponentEvent e) {
@@ -327,10 +338,19 @@ void updateLayoutVariables() {
 }
 
 void updateMapSize() {
-  map.mapDisplay.resize(width, height);
+  for(UnfoldingMap m : maps) {
+    m.mapDisplay.resize(width, height);
+  }
 }
 
+void switchMap() {
+  selectedMapIndex = (selectedMapIndex + 1) % maps.size();
+  map = maps.get(selectedMapIndex);
+}
 
+void keyPressed() {
+  switchMap();
+}
 
 
 
