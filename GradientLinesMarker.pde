@@ -75,25 +75,85 @@ public class GradientLinesMarker extends SimpleLinesMarker {
         addLocations(startLocation, endLocation);
     }
 
+    float tempCurrent = 0.0;
+    
     @Override
     public void draw(PGraphics pg, List<MapPosition> mapPositions) {
         if (mapPositions.isEmpty() || isHidden())
             return;
-
+        
         pg.pushStyle();
         pg.noFill();
         pg.strokeWeight(strokeWeight);
         pg.smooth();
 
-        LABColor minColor = new LABColor(color(0,0,200));
-        LABColor maxColor = new LABColor(color(220,0,0));
+        LABColor minColor = new LABColor(color(255, 255, 0));
+        LABColor maxColor = new LABColor(color(0, 0, 255));
+        
+        LABColor map0Color = new LABColor(color(0, 255, 255));
+        LABColor map1Color = new LABColor(color(255, 255, 255));
         
         boolean indexMarked = false;
         float indexX = 0;
         float indexY = 0;
 
+        float temp = tempCurrent;
+       
+        pg.strokeWeight(strokeWeight * 2.0);
         pg.beginShape(PConstants.LINES);
         MapPosition last = mapPositions.get(0);
+        
+        boolean minus = true;
+        for (int i = 1; i < mapPositions.size (); ++i) {
+            LABColor c;
+            if (elevationSelected) {
+                c = minColor.lerp(maxColor, (elevations.get(i)-minElevation)/(maxElevation-minElevation));
+            } else if (speedSelected) {
+                c = minColor.lerp(maxColor, speedTimes.get(i).speed/maxSpeed);
+            } else {
+                c = new LABColor(color(255,0,0));
+            }
+            if(selectedMapIndex == 0) {
+              pg.stroke(c.lerp(map0Color, 1 - temp).rgb);
+            }
+            else {
+              pg.stroke(c.lerp(map1Color, 1 - temp).rgb);
+            }
+            MapPosition mp = mapPositions.get(i);
+            pg.vertex(last.x, last.y);
+            pg.vertex(mp.x, mp.y);
+            last = mp;
+            
+            if (!indexMarked && selectedDateTime.before(speedTimes.get(i).time)) {
+                indexX = mp.x;
+                indexY = mp.y;
+                indexMarked = true;
+            }
+            
+            temp -= 0.01;
+            if(temp <= 0.0) {
+              temp = 1.0;
+            }
+            
+            /*
+            if(minus) {
+              temp -= 0.01;
+              if(temp <= 0.0) {
+                minus = false;
+              }
+            }
+            else {
+              temp += 0.01;
+              if(temp >= 1.0) {
+                minus = true;
+              }
+            }*/
+        }
+        pg.endShape();
+        
+        pg.strokeWeight(strokeWeight);
+        pg.beginShape(PConstants.LINES);
+        last = mapPositions.get(0);
         for (int i = 1; i < mapPositions.size (); ++i) {
             if (elevationSelected) {
                 pg.stroke(minColor.lerp(maxColor, (elevations.get(i)-minElevation)/(maxElevation-minElevation)).rgb);
@@ -116,10 +176,14 @@ public class GradientLinesMarker extends SimpleLinesMarker {
         pg.endShape();
         if (indexMarked && drawIndex) {
             pg.stroke(maxColor.rgb);
-            pg.strokeWeight(5);
+            pg.strokeWeight(strokeWeight * 4.0);
             pg.ellipse(indexX, indexY, 5, 5);
         }
         pg.popStyle();
+        tempCurrent += 0.01;
+        if(tempCurrent > 1.0) {
+          tempCurrent = 0.0;
+        }
     }
 }
 

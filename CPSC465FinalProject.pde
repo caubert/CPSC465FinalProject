@@ -46,7 +46,7 @@ double minElevation, maxElevation, midElevation, elevationDelta, dateDelta, minS
 //Interactive
 double selectedPercentile;
 boolean elevationSelected, speedSelected, drawIndex;
-int selectedMapIndex;
+int selectedMapIndex, previousHeight, previousWidth;
 
 void setup() {
   size(800, 800, OPENGL);
@@ -58,7 +58,8 @@ void setup() {
   elevationSelected = false;
   speedSelected = false;
   selectedMapIndex = 0;
-
+  previousHeight = height;
+  previousWidth = width;
 
   maps = new ArrayList<UnfoldingMap>();
   maps.add(new UnfoldingMap(this, "map0", 0, 0, width, height, true, false, new Google.GoogleTerrainProvider()));
@@ -110,26 +111,16 @@ void setup() {
   for(UnfoldingMap m : maps) {
     m.addMarkers(routeMarkers);
   }
-
-  frame.addComponentListener(new ComponentAdapter() {
-    public void componentResized(ComponentEvent e) {
-      if (e.getSource()==frame) {
-        updateLayoutVariables();
-        updateMapSize();
-      }
-    }
-  }
-  );
 }
 
 void draw() {
+  doWindowSizeCheck();
   locateMouse();
   background(255);
   map.draw();
   drawGraphs();
   if (mouseY > height / 2 && mouseX > LEFT_BORDER && mouseX < RIGHT_BORDER) {
     stroke(0, 0, 0, 128);
-    //line(mouseX, height / 2, mouseX, height);
     line(mouseX, TOP_BORDER_ELEVATION, mouseX, BOTTOM_BORDER_ELEVATION);
     line(mouseX, TOP_BORDER_SPEED, mouseX, BOTTOM_BORDER_SPEED);
     drawSelected();
@@ -329,6 +320,8 @@ void setupDataVariables() {
 }
 
 void updateLayoutVariables() {
+  previousHeight = height;
+  previousWidth = width;
   TOP_BORDER_ELEVATION = (height/5)*3 + VERTICAL_PADDING; 
   BOTTOM_BORDER_ELEVATION = (height/5)*4 - VERTICAL_PADDING;
   TOP_BORDER_SPEED = (height/5)*4 + VERTICAL_PADDING;
@@ -346,6 +339,13 @@ void updateMapSize() {
 void switchMap() {
   selectedMapIndex = (selectedMapIndex + 1) % maps.size();
   map = maps.get(selectedMapIndex);
+}
+
+void doWindowSizeCheck() {
+  if(previousWidth != width || previousHeight != height) {
+    updateLayoutVariables();
+    updateMapSize();
+  }
 }
 
 void keyPressed() {
