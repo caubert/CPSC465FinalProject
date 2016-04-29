@@ -46,6 +46,7 @@ double minElevation, maxElevation, midElevation, elevationDelta, dateDelta, minS
 //Interactive
 double selectedPercentile;
 boolean elevationSelected, speedSelected, drawIndex;
+float selectedElevation, selectedSpeed;
 int selectedMapIndex, previousHeight, previousWidth;
 
 void setup() {
@@ -57,6 +58,8 @@ void setup() {
   selectedPercentile = 0;
   elevationSelected = false;
   speedSelected = false;
+  selectedElevation = 0;
+  selectedSpeed = 0;
   selectedMapIndex = 0;
   previousHeight = height;
   previousWidth = width;
@@ -140,7 +143,7 @@ void locateMouse() {
 
 void drawGraphs() {
   noStroke();
-  fill(245, 210);
+  fill(245, 200);
   rect(0, (height/5)*3, width, (height/5)*3);
   drawElevationGraph();
   drawSpeedGraph();
@@ -277,7 +280,7 @@ void drawSelected() {
   textSize(12);
   fill(0);
   textAlign(LEFT, BOTTOM);
-  text(selectedDateTime.toString()/* + "Elevation: " + "meters, " + "Speed: " + " m/s, " + " mph"*/, 0, height);
+  text(selectedDateTime.toString() + "     Elevation: " +selectedElevation+ " meters,     Speed: " +nf(selectedSpeed,2,1)+ " m/s,  " +nf(selectedSpeed*(float)METER_PER_SECOND_TO_MILE_PER_HOUR,2,1)+ " mph", 0, height);
 }
 
 void setupDataVariables() {

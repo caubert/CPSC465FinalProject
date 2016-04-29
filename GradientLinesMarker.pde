@@ -124,12 +124,6 @@ public class GradientLinesMarker extends SimpleLinesMarker {
             pg.vertex(mp.x, mp.y);
             last = mp;
             
-            if (!indexMarked && selectedDateTime.before(speedTimes.get(i).time)) {
-                indexX = mp.x;
-                indexY = mp.y;
-                indexMarked = true;
-            }
-            
             temp -= 0.01;
             if(temp <= 0.0) {
               temp = 1.0;
@@ -171,6 +165,8 @@ public class GradientLinesMarker extends SimpleLinesMarker {
                 indexX = mp.x;
                 indexY = mp.y;
                 indexMarked = true;
+                selectedElevation = elevations.get(i);
+                selectedSpeed = speedTimes.get(i).speed;
             }
         }
         pg.endShape();
