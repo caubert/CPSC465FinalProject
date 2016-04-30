@@ -1,6 +1,8 @@
+// Authors: Cameron Aubert & Carter Currin
+// Course: CPSC 465
+
 
 import tomc.gpx.*;
-
 import processing.core.PApplet;
 import de.fhpotsdam.unfolding.*;
 import de.fhpotsdam.unfolding.geo.*;
@@ -31,7 +33,6 @@ double METER_TO_CENTIMETER = 100;
 double FOOT_TO_CENTIMETER = 30.48;
 double MILE_TO_FOOT = 5280;
 double MILE_TO_METER = MILE_TO_FOOT * FOOT_TO_CENTIMETER / METER_TO_CENTIMETER;
-
 double METER_PER_SECOND_TO_MILE_PER_HOUR = (1.0 / MILE_TO_METER) * 60 * 60;
 
 //Graph coordinate constants
@@ -49,6 +50,7 @@ boolean elevationSelected, speedSelected, drawIndex;
 float selectedElevation, selectedSpeed;
 int selectedMapIndex, previousHeight, previousWidth;
 
+// sets up the sketch
 void setup() {
   size(800, 800, OPENGL);
   frame.setResizable(true);
@@ -76,8 +78,8 @@ void setup() {
 
   gpx = new GPX(this);
 
-  //gpx.parse("data/activity_1130367568.gpx");
-  gpx.parse("data/activity_1120979638.gpx");
+  //gpx.parse("data/activity_1130367568.gpx"); // ride to Cheney
+  gpx.parse("data/activity_1120979638.gpx"); // "Simon Says" ride
 
   locations = new ArrayList<Location>();
   elevations = new ArrayList<ElevationLocation>();
@@ -105,7 +107,6 @@ void setup() {
   println("                 or " + DistanceAccum.totalDistance / MILE_TO_METER + " miles");
 
   List<Marker> routeMarkers = new ArrayList<Marker>();
-  //GradientLinesMarker glm = new GradientLinesMarker(locations);
   GradientLinesMarker glm = new GradientLinesMarker(elevations);
   glm.setColor(color(255, 0, 0));
   glm.setStrokeWeight(3);
@@ -116,6 +117,8 @@ void setup() {
   }
 }
 
+
+// redraws the sketch
 void draw() {
   doWindowSizeCheck();
   locateMouse();
@@ -130,6 +133,7 @@ void draw() {
   }
 }
 
+// handles logic related ot mouse location
 void locateMouse() {
   elevationSelected = mouseY > TOP_BORDER_ELEVATION - VERTICAL_PADDING && mouseY < BOTTOM_BORDER_ELEVATION + VERTICAL_PADDING;
   speedSelected = mouseY > TOP_BORDER_SPEED - VERTICAL_PADDING && mouseY < BOTTOM_BORDER_SPEED + VERTICAL_PADDING;
@@ -141,6 +145,7 @@ void locateMouse() {
   selectedDateTime = new Date((long)(minDateTime * (1.0 - selectedPercentile) + maxDateTime * selectedPercentile));
 }
 
+// draws graphs
 void drawGraphs() {
   noStroke();
   fill(245, 200);
@@ -150,16 +155,19 @@ void drawGraphs() {
   drawLabels();
 }
 
+// draws the elevation graph
 void drawElevationGraph() {
   drawElevationGraphBorders();
   drawElevationGraphLine();
 }
 
+// draws the speed graph
 void drawSpeedGraph() {
   drawSpeedGraphBorders();
   drawSpeedGraphLine();
 }
 
+// draws graph lables
 void drawLabels() {
   drawElevationYAxisLabels();
   drawSpeedYAxisLabels();
@@ -276,6 +284,7 @@ void drawTimeXAxisLabels() {
   text(DateFormat.getTimeInstance().format(maxDate), RIGHT_BORDER, BOTTOM_BORDER_ELEVATION + 3 * VERTICAL_PADDING / 4);
 }
 
+// prints information about the position currently being hovered over
 void drawSelected() {
   textSize(12);
   fill(0);
@@ -322,6 +331,7 @@ void setupDataVariables() {
   midSpeed = minSpeed + (maxSpeed - minSpeed) / 2.0;
 }
 
+// updates chart layout variables
 void updateLayoutVariables() {
   previousHeight = height;
   previousWidth = width;
@@ -333,17 +343,20 @@ void updateLayoutVariables() {
   RIGHT_BORDER = width - HORTIZONTAL_PADDING;
 }
 
+// updates the map size
 void updateMapSize() {
   for(UnfoldingMap m : maps) {
     m.mapDisplay.resize(width, height);
   }
 }
 
+// switches the map being displayed
 void switchMap() {
   selectedMapIndex = (selectedMapIndex + 1) % maps.size();
   map = maps.get(selectedMapIndex);
 }
 
+// checks the window size
 void doWindowSizeCheck() {
   if(previousWidth != width || previousHeight != height) {
     updateLayoutVariables();
@@ -351,6 +364,7 @@ void doWindowSizeCheck() {
   }
 }
 
+// handles keys being pressed
 void keyPressed() {
   switchMap();
 }

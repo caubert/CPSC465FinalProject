@@ -1,3 +1,6 @@
+// Authors: Cameron Aubert & Carter Currin
+// Course: CPSC 465
+
 
 import java.util.Date;
 

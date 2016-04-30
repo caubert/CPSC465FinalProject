@@ -1,0 +1,13 @@
+The data that we used in our visualization was collected using a Garmin device by myself (Cameron Aubert).  
+
+No additional processing of the data was done outside the pde file.
+
+To interact with our visualization:
+    Press any key to switch between a terrain map and a satelite view.
+    Hover the mouse over either the elevation or speed graphs and a point will be displayed on the map corresponding to the point currently being hovered over on the chart.
+
+
+Notes for running:
+    * must be run using Processing 2
+    * the Unfolding Maps library must be installed via the library manager
+    * processing-gpx must be downloaded from https://github.com/RandomEtc/processing-gpx , unzipped, renamed as "gpx",and placed into the libraries folder within your sketchbook 
